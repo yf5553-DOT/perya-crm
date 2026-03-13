@@ -20,6 +20,14 @@ jobs:
     - name: Setup Rust
       uses: dtolnay/rust-action@stable
       
+    - name: Create icons folder
+      run: mkdir -p src-tauri/icons
+      
+    - name: Download default icons
+      run: |
+        curl -L -o src-tauri/icons/icon.png "https://raw.githubusercontent.com/tauri-apps/tauri/dev/examples/api/src-tauri/icons/128x128.png"
+        copy src-tauri/icons/icon.png src-tauri/icons/icon.ico
+      
     - name: Install dependencies
       run: npm install
       
