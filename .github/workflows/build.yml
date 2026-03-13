@@ -10,23 +10,30 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-        
-    - name: Setup Rust
-      uses: dtolnay/rust-action@stable
-      
     - name: Create icons folder
       run: mkdir -p src-tauri/icons
       
-    - name: Download default icons
+    - name: Create default icon
       run: |
-        curl -L -o src-tauri/icons/icon.png "https://raw.githubusercontent.com/tauri-apps/tauri/dev/examples/api/src-tauri/icons/128x128.png"
-        copy src-tauri/icons/icon.png src-tauri/icons/icon.ico
+        [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null
+        $bitmap = New-Object System.Drawing.Bitmap(256, 256)
+        $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+        $graphics.Clear([System.Drawing.Color]::FromArgb(24, 144, 255))
+        $bitmap.Save("src-tauri/icons/icon.png", [System.Drawing.Imaging.ImageFormat]::Png)
+        $bitmap.Save("src-tauri/icons/icon.ico", [System.Drawing.Imaging.ImageFormat]::Icon)
+      shell: pwsh
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        
+    - name: Install Rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        toolchain: stable
       
     - name: Install dependencies
       run: npm install
@@ -35,13 +42,13 @@ jobs:
       run: npm run tauri:build
       
     - name: Upload MSI
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: windows-msi
         path: src-tauri/target/release/bundle/msi/*.msi
         
     - name: Upload EXE
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: windows-exe
         path: src-tauri/target/release/bundle/nsis/*.exe
